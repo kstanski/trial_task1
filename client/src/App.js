@@ -1,19 +1,18 @@
+// This is the code of the trial task client app
 
-// /client/App.js
 import React, { Component } from "react";
 import axios from "axios";
 
+const serverAddress = "http://localhost:3001/api"
+
 class App extends Component {
-  // initialize our state 
 
   state = {
     data: [],
     intervalIsSet: false,
   };
 
-  // when component mounts, first thing it does is fetch all existing data in our db
-  // then we incorporate a polling logic so that we can easily see if our db has 
-  // changed and implement those changes into our UI
+  // Update the list of previous jobs every 1sec
   componentDidMount() {
     this.getDataFromDb();
     if (!this.state.intervalIsSet) {
@@ -22,8 +21,7 @@ class App extends Component {
     }
   }
 
-  // never let a process live forever 
-  // always kill a process everytime we are done using it
+  // Kill the list updates when finished
   componentWillUnmount() {
     if (this.state.intervalIsSet) {
       clearInterval(this.state.intervalIsSet);
@@ -31,75 +29,63 @@ class App extends Component {
     }
   }
 
-  // just a note, here, in the front end, we use the id key of our data object 
-  // in order to identify which we want to Update or delete.
-  // for our back end, we use the object id assigned by MongoDB to modify 
-  // data base entries
-
-  // our first get method that uses our backend api to 
-  // fetch data from our data base
+  // Load data from DB to produce a list of previous jobs
   getDataFromDb = () => {
-    fetch("http://localhost:3001/api/getData")
+    fetch(serverAddress + "/getData")
       .then(data => data.json())
       .then(res => this.setState({ data: res.data }));
   };
 
-
-  // our delete method that uses our backend api 
-  // to remove existing database information
+  // Remove a record from the list
   deleteFromDB = data_id => {
-    axios.delete("http://localhost:3001/api/deleteData", {
+    axios.delete(serverAddress + "/deleteData", {
       data: {
         id: data_id
       }
     });
   };
 
-  uploadAndConvertToAudio = (ev) => {
-    ev.preventDefault();
-
+  // Convert a file to audio and add to DB
+  uploadAndConvertToAudio = () => {
     const data = new FormData();
     data.append('file', this.uploadInput.files[0]);
 
-    fetch('http://localhost:3001/api/uploadAndConvertToAudio', {
+    fetch(serverAddress + '/uploadAndConvertToAudio', {
       method: 'POST',
       body: data,
     });
   }
 
-  uploadAndConvertToVideo = (ev) => {
-    ev.preventDefault();
-
+  // Convert a file to video and add to DB
+  uploadAndConvertToVideo = () => {
     const data = new FormData();
     data.append('file', this.uploadInput.files[0]);
 
-    fetch('http://localhost:3001/api/uploadAndConvertToVideo', {
+    fetch(serverAddress + '/uploadAndConvertToVideo', {
       method: 'POST',
       body: data,
     });
   }
 
-  uploadAndConcatenateAudio = (ev) => {
-    ev.preventDefault();
-
+  // Join two audio files and add the resulting file to DB
+  uploadAndConcatenateAudio = () => {
     const data = new FormData();
     data.append('fileA', this.uploadInputA.files[0]);
     data.append('fileB', this.uploadInputB.files[0]);
 
-    fetch('http://localhost:3001/api/uploadAndConcatenateAudio', {
+    fetch(serverAddress + '/uploadAndConcatenateAudio', {
       method: 'POST',
       body: data,
     });
   }
 
+  // Open a file to allow for inspection and download
   openUrl = (urlAddress) => {
     window.open('http://localhost:3001' + urlAddress)
   };
 
 
-  // here is our UI
-  // it is easy to understand their functions when you 
-  // see them render into our screen
+  // Render a simple UI with inputs, buttons and a dynamic list
   render() {
     const { data } = this.state;
     return (
@@ -107,20 +93,21 @@ class App extends Component {
         <input ref={(ref) => { this.uploadInput = ref; }} type="file" />
         <div>
           <button onClick={this.uploadAndConvertToAudio}>Convert To Audio</button>
-        </div>
-        <div>
           <button onClick={this.uploadAndConvertToVideo}>Convert To Video</button>
         </div>
+
+        <br></br>
         <input ref={(ref) => { this.uploadInputA = ref; }} type="file" />
         <input ref={(ref) => { this.uploadInputB = ref; }} type="file" />
         <div>
           <button onClick={this.uploadAndConcatenateAudio}>Concatenate audio files</button>
         </div>
 
+        <br></br>
         <div>
           <table>
             <tr>
-              <th>Date</th>
+              <th>Time</th>
               <th>Filename</th>
               <th></th>
               <th></th>
