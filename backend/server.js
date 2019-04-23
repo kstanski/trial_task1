@@ -128,6 +128,9 @@ concatenateAudio = (dir, filenameA, filenameB, extension) => {
   const filenameA_path = dir + '/' + filenameA;
   const filenameB_path = dir + '/' + filenameB;
   const output = dir + '/' + filenameA + '+' + filenameB + extension;
+
+  console.log('ffmpeg -i ' + filenameA_path + ' -i ' + filenameB_path + ' -filter_complex "[0:a] [1:a] concat=n=2:v=0:a=1 [a]" -map "[a]" ' + output);
+
   cmd.run('ffmpeg -i ' + filenameA_path + ' -i ' + filenameB_path + ' -filter_complex "[0:a] [1:a] concat=n=2:v=0:a=1 [a]" -map "[a]" ' + output);
 }
 
@@ -155,7 +158,7 @@ router.post("/uploadAndConcatenateAudio", (req, res) => {
   });
 
   // Join the audio files
-  concatenateAudio = (files_dir_path, filenameA, filenameB, extension);
+  concatenateAudio(files_dir_path, filenameA, filenameB, extension);
 
   // Add new record to the DB
   const output_name = filenameA + '+' + filenameB + extension
